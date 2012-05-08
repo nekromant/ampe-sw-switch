@@ -5,9 +5,7 @@
 
 #define param_check_power(a,b) ;;
 
-int pwr[2]; 
-
-
+int pwr[3]; 
 int sw_usb_enable_hcd(int hnum);
 int sw_usb_disable_hcd(int hnum);
 
@@ -15,8 +13,10 @@ static int param_set_power(const char *val, struct kernel_param *kp)
 {
 	int hnum, state;
 	sscanf(val, "host %d %d", &hnum, &state);
-	if (hnum>1)
-		printk("sw-switcher: no such host\n");
+	if (hnum>3){
+		printk("sw-switcher: no way such a host can exist\n");
+		return 0;
+	}
 	printk("sw-switcher: Powering %s host %d\n", state ? "on" : "off", hnum);
 	pwr[hnum]=state;
 	state ? sw_usb_enable_hcd(hnum) : sw_usb_disable_hcd(hnum) ;
@@ -31,10 +31,11 @@ static void update_values(void)
 		pwr[1] ? "on" : "off");
 }
 
+const char* wrn = "WARNING: Info may be inaccurate if hosts are turned on/off elsewhere. I don't know a way to check them\n";
 static int param_get_power(char *buffer, struct kernel_param *kp)
 {
 	update_values();
-	sprintf(buffer, "1:%d \n2:%d \n",pwr[0],pwr[1]);
+	sprintf(buffer, "1:%d \n2:%d \n%s",pwr[0],pwr[1],wrn);
 	return strlen(buffer);
 }
 
@@ -53,8 +54,7 @@ module_param_named(power, g_power, power,  (S_IRUGO | S_IWUSR));
 
 static int __init switch_init(void)
 {
- printk ("sw-swicth: For the greater justice!!11\n");
- 
+ printk ("sw-switch: For the greater justice!!11\n");
  return 0;
 }
 
